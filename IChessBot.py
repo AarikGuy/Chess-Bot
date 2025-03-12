@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from chess import Board
 
 
 class IChessBot(ABC):

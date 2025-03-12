@@ -1,23 +1,18 @@
 from chess import Board
 from IChessBot import IChessBot
+import random
 
+
+# Incredibly stupid chess bot. Chooses a random legal move every turn. A human player can beat him easily.
 class Level1ChessBot(IChessBot):
-
     def __init__(self):
-        self.ply_cutoff = 1
-
-    def __init__(self, ply_cutoff):
-        self.ply_cutoff = ply_cutoff
+        pass
 
     def generate_move(self, chess_board: Board) -> Board:
         if chess_board.is_checkmate():
             raise Exception("Can't generate move on a completed game.")
 
-        legal_moves_copy = chess_board.legal_moves.copy()
+        legal_moves = list(chess_board.legal_moves)
+        legal_move = random.choice(legal_moves)
 
-        for legal_move in legal_moves_copy:
-            chess_board.push_san(legal_move)
-
-            if self.ply_cutoff > 1
-            
-    def get_max_move(self, chess_board)
+        return legal_move
