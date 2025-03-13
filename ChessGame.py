@@ -40,7 +40,9 @@ class ChessGame:
 
     def play_game(self):
         while not self.board.is_checkmate():
-            while not self.board.turn == self.bots_color and self.board.is_checkmate():
+            while (
+                not self.board.turn == self.bots_color and not self.board.is_checkmate()
+            ):
 
                 bots_color = "black" if self.bots_color == WHITE else "white"
                 legal_moves = [
