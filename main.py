@@ -1,8 +1,8 @@
 from chess import WHITE, BLACK
 from ChessGame import ChessGame
-from Level1ChessBot import Level1ChessBot
+from DoorMatChessBot import DoorMatChessBot
 
-bot = Level1ChessBot()
+bot = DoorMatChessBot()
 chess_game = ChessGame(bot)
 
 chess_game.play_game()
