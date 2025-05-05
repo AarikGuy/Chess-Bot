@@ -1,15 +1,26 @@
 from IChessBot import IChessBot
+
+
 from DoorMatChessBot import DoorMatChessBot
+
+
 from chess import Board, WHITE, BLACK
 
 
 class DunceFishChessBot(DoorMatChessBot):
 
-    def __init__(self, ply_cutoff: int):
+    def __init__(self, ply_cutoff: int, color=WHITE):
+
         self.ply_cutoff = ply_cutoff
+
+        self.color = color
+
+        self.call_counter = 0
+
         pass
 
     def choose_move(self, legal_moves: list, chess_board: Board):
+
         [fittest_move, highest_fitness_score] = self.choose_fittest_move(
             legal_moves, chess_board, 1, chess_board.turn
         )
@@ -17,48 +28,86 @@ class DunceFishChessBot(DoorMatChessBot):
         return fittest_move
 
     def choose_fittest_move(
-        self, legal_moves: list, chess_board: Board, ply_count: int, bot_color
+        self, legal_moves: list, chess_board: Board, ply_count: int, color_to_move
     ):
-        highest_fitness_score = -1000000000
-        lowest_fitness_score = 100000000000
+
+        self.call_counter += 1
+
+        color_to_move_fitness_score = 0
+
+        if color_to_move == WHITE:
+
+            color_to_move_fitness_score = -1000000
+
+        else:
+
+            color_to_move_fitness_score = 1000000
+
         fittest_move = None
 
-
         for legal_move in legal_moves:
+
             chess_board.push(legal_move)
 
             if ply_count >= self.ply_cutoff:
-                [fitness_score_white, fitness_score_black] = self.get_fitness_scores(
+
+                [white_fitness_score, black_fitness_score] = self.get_fitness_scores(
                     chess_board
                 )
-                my_fitness_score = 0
-                other_fitness_score = 0
 
-                if bot_color == WHITE:
-                    my_fitness_score = fitness_score_white
-                    other_fitness_score = fitness_score_black
-                else:
-                    my_fitness_score = fitness_score_black
-                    other_fitness_score = fitness_score_black
+                white_fitness_score = white_fitness_score - black_fitness_score
 
-                move_fitness_score = my_fitness_score - other_fitness_score
+                if (
+                    color_to_move == WHITE
+                    and white_fitness_score >= color_to_move_fitness_score
+                ):
 
-                if move_fitness_score > highest_fitness_score:
+                    color_to_move_fitness_score = white_fitness_score
+
                     fittest_move = legal_move
-                    highest_fitness_score = move_fitness_score
+
+                if (
+                    color_to_move == BLACK
+                    and white_fitness_score <= color_to_move_fitness_score
+                ):
+
+                    color_to_move_fitness_score = white_fitness_score
+
+                    fittest_move = legal_move
 
             else:
-                sub_legal_moves = self.get_legal_moves_list(chess_board)
-                [fittest_sub_move, highest_sub_fitness_score] = (
+
+                opponents_legal_moves = self.get_legal_moves_list(chess_board)
+
+                sub_move_color = not color_to_move
+
+                [opponents_best_response, white_fitness_score] = (
                     self.choose_fittest_move(
-                        sub_legal_moves, chess_board, ply_count + 1, not bot_color
+                        opponents_legal_moves,
+                        chess_board,
+                        ply_count + 1,
+                        sub_move_color,
                     )
                 )
 
-                if highest_sub_fitness_score > highest_fitness_score:
-                    highest_fitness_score = highest_sub_fitness_score
+                if (
+                    color_to_move == WHITE
+                    and white_fitness_score <= color_to_move_fitness_score
+                ):
+
                     fittest_move = legal_move
+
+                    color_to_move_fitness_score = white_fitness_score
+
+                if (
+                    color_to_move == BLACK
+                    and white_fitness_score >= color_to_move_fitness_score
+                ):
+
+                    fittest_move = legal_move
+
+                    color_to_move_fitness_score = white_fitness_score
 
             chess_board.pop()
 
-        return [fittest_move, highest_fitness_score]
+        return [fittest_move, color_to_move_fitness_score]
