@@ -21,9 +21,33 @@ class DunceFishChessBot(DoorMatChessBot):
 
     def choose_move(self, legal_moves: list, chess_board: Board):
 
-        [fittest_move, highest_fitness_score] = self.choose_fittest_move(
-            legal_moves, chess_board, 1, chess_board.turn
-        )
+        color_to_move = chess_board.turn
+
+        fittest_move_score = -1000000
+
+        if color_to_move == BLACK:
+
+            fittest_move_score = 1000000
+
+        for legal_move in legal_moves:
+
+            chess_board.push(legal_move)
+
+            opponents_legal_moves = self.get_legal_moves_list(chess_board)
+
+            [move, fitness_score] = self.choose_fittest_move(
+                opponents_legal_moves, chess_board, 1, chess_board.turn
+            )
+
+            chess_board.pop()
+
+            if color_to_move == WHITE and fittest_move_score <= fitness_score:
+                fittest_move_score = fitness_score
+                fittest_move = legal_move
+
+            if color_to_move == BLACK and fittest_move_score >= fitness_score:
+                fittest_move_score = fitness_score
+                fittest_move = legal_move
 
         return fittest_move
 
@@ -92,19 +116,17 @@ class DunceFishChessBot(DoorMatChessBot):
 
                 if (
                     color_to_move == WHITE
-                    and white_fitness_score <= color_to_move_fitness_score
-                ):
-
-                    fittest_move = legal_move
-
-                    color_to_move_fitness_score = white_fitness_score
-
-                if (
-                    color_to_move == BLACK
                     and white_fitness_score >= color_to_move_fitness_score
                 ):
 
+                    color_to_move_fitness_score = white_fitness_score
+
                     fittest_move = legal_move
+
+                if (
+                    color_to_move == BLACK
+                    and white_fitness_score <= color_to_move_fitness_score
+                ):
 
                     color_to_move_fitness_score = white_fitness_score
 
