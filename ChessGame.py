@@ -13,10 +13,17 @@ class ChessGame:
             self.bots_color = bots_color
         self.bot = chess_bot
 
+        self.add_debug_moves()
+
     def __init__(self, white_bot: IChessBot, black_bot: bool):
         self.board = Board()
         self.white_bot = white_bot
         self.black_bot = black_bot
+        self.add_debug_moves()
+
+    def add_debug_moves(self):
+        self.white_debug_moves = ["d4", "Bf4", "Nf3", "e3", "Bd3", "Bd6+"]
+        self.black_debug_moves = ["d5", "Bf5", "Nf6", "e6", "Bd6"]
 
     def choose_color(self):
         color_picked = False
@@ -50,26 +57,25 @@ class ChessGame:
         turn_count = 1
         moves = []
 
-        while not self.board.is_checkmate():
+        while not self.is_game_over():
             while (
-                self.board.turn == WHITE and not self.board.is_checkmate()
+                self.board.turn == WHITE and not self.is_game_over()
             ):
-                if len(WHITE_MOVES) > 0:
-                    move = WHITE_MOVES.pop(0)
-                    self.board.push_san(move)
+                if self.push_debug_moves():
                     continue
+
+                print(self.board.is_stalemate())
 
                 move = self.white_bot.generate_move(self.board)
                 self.board.push(move)
                 print(f"""The white bot has played: {str(move)}, your move!""")
                 moves.insert(len(moves), str(move))
 
-            while self.board.turn == BLACK and not self.board.is_checkmate():
-                if len(BLACK_MOVES) > 0:
-                    move = BLACK_MOVES.pop(0)
-                    self.board.push_san(move)
-
+            while self.board.turn == BLACK and not self.is_game_over():
+                if self.push_debug_moves():
                     continue
+
+                print(self.board.is_stalemate())
 
                 move = self.black_bot.generate_move(self.board)
                 self.board.push(move)
@@ -77,25 +83,21 @@ class ChessGame:
                 moves.insert(len(moves), str(move))
 
         start_board = Board()
-        print(start_board.variation_san(
-            [Move.from_uci(m) for m in moves]))
+
+        if self.board.is_checkmate():
+            print(start_board.variation_san(
+                [Move.from_uci(m) for m in moves]))
+        
 
     def play_against_bot(self):
         WHITE_MOVES = ["d4", "Bf4", "Nf3", "e3", "Bd3", "Bd6+"]
         BLACK_MOVES = ["d5", "Bf5", "Nf6", "e6", "Bd6"]
 
-        while not self.board.is_checkmate():
+        while not self.is_game_over():
             while (
-                not self.board.turn == self.bots_color and not self.board.is_checkmate()
+                not self.board.turn == self.bots_color and not self.is_game_over()
             ):
-                if self.bots_color == WHITE and len(BLACK_MOVES) > 0:
-                    move = BLACK_MOVES.pop(0)
-                    self.board.push_san(move)
-                    continue
-
-                if self.bots_color == BLACK and len(WHITE_MOVES) > 0:
-                    move = WHITE_MOVES.pop(0)
-                    self.board.push_san(move)
+                if self.push_debug_moves():
                     continue
 
                 players_color = "black" if self.bots_color == WHITE else "white"
@@ -112,17 +114,8 @@ class ChessGame:
                 else:
                     print("""No valid move was selected pick again!""")
 
-            while self.board.turn == self.bots_color and not self.board.is_checkmate():
-                if self.bots_color == WHITE and len(WHITE_MOVES) > 0:
-                    move = WHITE_MOVES.pop(0)
-                    self.board.push_san(move)
-
-                    continue
-
-                if self.bots_color == BLACK and len(BLACK_MOVES) > 0:
-                    move = BLACK_MOVES.pop(0)
-                    self.board.push_san(move)
-
+            while self.board.turn == self.bots_color and not self.is_game_over():
+                if self.push_debug_moves():
                     continue
 
                 move = self.bot.generate_move(self.board)
@@ -131,3 +124,24 @@ class ChessGame:
 
         print("GAME OVER!")
         print(str(self.board.result))
+
+    def is_game_over(self):
+        return self.board.is_checkmate() or self.board.is_stalemate() or len(list(self.board.legal_moves)) == 0
+
+    def push_debug_moves(self):
+        if self.board.turn == WHITE and len(self.white_debug_moves) > 0:
+            move = self.white_debug_moves.pop(0)
+            self.board.push_san(move)
+
+            return True
+
+        if self.board.turn == BLACK and len(self.black_debug_moves) > 0:
+            move = self.black_debug_moves.pop(0)
+            self.board.push_san(move)
+
+            return True
+
+        return False
+
+        move = debug_moves.pop(0)
+        self.board.push_san(move)
