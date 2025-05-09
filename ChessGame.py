@@ -4,6 +4,11 @@ from IChessBot import IChessBot
 
 
 class ChessGame:
+    def set_up_board(self):
+        self.moves = []
+        self.white_debug_moves = ["d4", "Bf4", "Nf3", "e3", "Bd3", "Bd6+"]
+        self.black_debug_moves = ["d5", "Bf5", "Nf6", "e6", "Bd6"]
+
     def __init__(self, chess_bot: IChessBot, bots_color: bool = None):
         self.board = Board()
 
@@ -13,17 +18,13 @@ class ChessGame:
             self.bots_color = bots_color
         self.bot = chess_bot
 
-        self.add_debug_moves()
+        self.set_up_board()
 
     def __init__(self, white_bot: IChessBot, black_bot: bool):
         self.board = Board()
         self.white_bot = white_bot
         self.black_bot = black_bot
-        self.add_debug_moves()
-
-    def add_debug_moves(self):
-        self.white_debug_moves = ["d4", "Bf4", "Nf3", "e3", "Bd3", "Bd6+"]
-        self.black_debug_moves = ["d5", "Bf5", "Nf6", "e6", "Bd6"]
+        self.set_up_board()
 
     def choose_color(self):
         color_picked = False
@@ -52,10 +53,7 @@ class ChessGame:
         raise Exception("No color was selected.")
 
     def have_bots_play(self):
-        WHITE_MOVES = []
-        BLACK_MOVES = []
         turn_count = 1
-        moves = []
 
         while not self.is_game_over():
             while (
@@ -64,35 +62,24 @@ class ChessGame:
                 if self.push_debug_moves():
                     continue
 
-                print(self.board.is_stalemate())
-
                 move = self.white_bot.generate_move(self.board)
                 self.board.push(move)
-                print(f"""The white bot has played: {str(move)}, your move!""")
-                moves.insert(len(moves), str(move))
+                self.moves.insert(len(self.moves), str(move))
 
             while self.board.turn == BLACK and not self.is_game_over():
                 if self.push_debug_moves():
                     continue
 
-                print(self.board.is_stalemate())
-
                 move = self.black_bot.generate_move(self.board)
                 self.board.push(move)
-                print(f"""The black bot has played: {str(move)}, your move!""")
-                moves.insert(len(moves), str(move))
+                self.moves.insert(len(self.moves), str(move))
 
         start_board = Board()
 
-        if self.board.is_checkmate():
-            print(start_board.variation_san(
-                [Move.from_uci(m) for m in moves]))
-        
+        print(start_board.variation_san(
+            [Move.from_uci(m) for m in self.moves]))
 
     def play_against_bot(self):
-        WHITE_MOVES = ["d4", "Bf4", "Nf3", "e3", "Bd3", "Bd6+"]
-        BLACK_MOVES = ["d5", "Bf5", "Nf6", "e6", "Bd6"]
-
         while not self.is_game_over():
             while (
                 not self.board.turn == self.bots_color and not self.is_game_over()
@@ -132,12 +119,14 @@ class ChessGame:
         if self.board.turn == WHITE and len(self.white_debug_moves) > 0:
             move = self.white_debug_moves.pop(0)
             self.board.push_san(move)
+            self.moves.insert(len(self.moves), str(self.board.peek()))
 
             return True
 
         if self.board.turn == BLACK and len(self.black_debug_moves) > 0:
             move = self.black_debug_moves.pop(0)
             self.board.push_san(move)
+            self.moves.insert(len(self.moves), str(self.board.peek()))
 
             return True
 
