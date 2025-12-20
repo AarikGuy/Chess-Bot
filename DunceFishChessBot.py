@@ -75,6 +75,17 @@ class DunceFishChessBot(DoorMatChessBot):
             chess_board.push(legal_move)
 
             '''
+            If a checkmate is found, break
+            out of the method and indicate
+            with indiciation that it's the
+            optimal move, no need to continue
+            '''
+            if (chess_board.is_checkmate):
+              max_fitness = 1000000 if color_to_move == WHITE else -1000000 
+              chess_board.pop()
+              return [legal_move, max_fitness]
+
+            '''
             Play cutoff makes sure that this function doesn't run forever.
             The base case, grab the fitness state of the game board to 
             assess who's winning in this position.
