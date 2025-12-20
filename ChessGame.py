@@ -2,7 +2,6 @@ from chess import Move, Board, WHITE, BLACK
 import random
 from IChessBot import IChessBot
 
-
 class ChessGame:
     def set_up_board(self):
         self.moves = []
@@ -54,11 +53,14 @@ class ChessGame:
 
     def have_bots_play(self):
         turn_count = 1
+        last_to_move = WHITE
 
         while not self.is_game_over():
             while (
                 self.board.turn == WHITE and not self.is_game_over()
             ):
+                last_to_move = WHITE
+
                 if self.push_debug_moves():
                     continue
 
@@ -67,6 +69,7 @@ class ChessGame:
                 self.moves.insert(len(self.moves), str(move))
 
             while self.board.turn == BLACK and not self.is_game_over():
+                last_to_move = BLACK
                 if self.push_debug_moves():
                     continue
 
@@ -78,6 +81,11 @@ class ChessGame:
 
         print(start_board.variation_san(
             [Move.from_uci(m) for m in self.moves]))
+        
+        winner = "White" if last_to_move == WHITE else "Black"
+        print(f"{winner} wins!")
+
+        return last_to_move
 
     def play_against_bot(self):
         while not self.is_game_over():
@@ -131,6 +139,3 @@ class ChessGame:
             return True
 
         return False
-
-        move = debug_moves.pop(0)
-        self.board.push_san(move)
