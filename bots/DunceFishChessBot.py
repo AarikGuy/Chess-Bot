@@ -1,5 +1,5 @@
-from IChessBot import IChessBot
-from DoorMatChessBot import DoorMatChessBot
+from bots.IChessBot import IChessBot
+from bots.DoorMatChessBot import DoorMatChessBot
 from chess import Board, WHITE, BLACK
 
 

@@ -1,6 +1,6 @@
 from chess import Move, Board, WHITE, BLACK
 import random
-from IChessBot import IChessBot
+from bots.IChessBot import IChessBot
 
 class ChessGame:
     def set_up_board(self):

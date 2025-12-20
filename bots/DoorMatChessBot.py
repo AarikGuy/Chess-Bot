@@ -1,8 +1,7 @@
-from chess import Board
-
-
-from IChessBot import IChessBot
 import random
+
+from chess import Board
+from bots.IChessBot import IChessBot
 
 """
 Chess bot that makes random moves.
