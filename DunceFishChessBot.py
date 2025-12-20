@@ -4,12 +4,22 @@ from chess import Board, WHITE, BLACK
 
 
 class DunceFishChessBot(DoorMatChessBot):
-    def __init__(self, ply_cutoff: int, color=WHITE):
+    def __init__(self, ply_cutoff: int, color=WHITE, random_move_frequency=0):
+        DoorMatChessBot.__init__(self)
+
         self.ply_cutoff = ply_cutoff
         self.color = color
         self.call_counter = 0
+        self.moves_made = 0
+        self.random_move_frequency = random_move_frequency
 
     def choose_move(self, legal_moves: list, chess_board: Board):
+        self.moves_made += 1
+        
+        # Every random_move_frequency number of moves
+        if (self.random_move_frequency > 0 and self.moves_made % self.random_move_frequency == 0):
+            return DoorMatChessBot.choose_move(self, legal_moves, chess_board)
+            
         color_to_move = chess_board.turn
         fittest_move_score = -1000000
 
