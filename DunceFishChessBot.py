@@ -36,7 +36,7 @@ class DunceFishChessBot(DoorMatChessBot):
 
             opponents_legal_moves = self.get_legal_moves_list(chess_board)
             [move, next_move_fitness_score] = self.choose_fittest_move(
-                opponents_legal_moves, chess_board, 1, chess_board.turn
+                opponents_legal_moves, chess_board, 1, chess_board.turn, self.ply_cutoff
             )
 
             chess_board.pop()
@@ -61,7 +61,7 @@ class DunceFishChessBot(DoorMatChessBot):
     move for the color that's moving
     '''
     def choose_fittest_move(
-        self, legal_moves: list, chess_board: Board, ply_count: int, color_to_move
+        self, legal_moves: list, chess_board: Board, ply_count: int, color_to_move, ply_cutoff: int
     ):
         self.call_counter += 1
         fittest_move = None
@@ -95,7 +95,7 @@ class DunceFishChessBot(DoorMatChessBot):
             The base case, grab the fitness state of the game board to 
             assess who's winning in this position.
             '''
-            if ply_count >= self.ply_cutoff:
+            if ply_count >= ply_cutoff:
                 [white_fitness_score, black_fitness_score] = self.get_fitness_scores(
                     chess_board
                 )
@@ -125,6 +125,7 @@ class DunceFishChessBot(DoorMatChessBot):
                         chess_board,
                         ply_count + 1,
                         next_moves_color,
+                        ply_cutoff
                     )
                 )
 
