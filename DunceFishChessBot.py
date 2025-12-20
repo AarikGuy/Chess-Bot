@@ -33,18 +33,18 @@ class DunceFishChessBot(DoorMatChessBot):
             chess_board.push(legal_move)
 
             opponents_legal_moves = self.get_legal_moves_list(chess_board)
-            [move, fitness_score] = self.choose_fittest_move(
+            [move, next_move_fitness_score] = self.choose_fittest_move(
                 opponents_legal_moves, chess_board, 1, chess_board.turn
             )
 
             chess_board.pop()
 
-            if color_to_move == WHITE and fittest_move_score <= fitness_score:
-                fittest_move_score = fitness_score
+            if color_to_move == WHITE and fittest_move_score <= next_move_fitness_score:
+                fittest_move_score = next_move_fitness_score
                 fittest_move = legal_move
 
-            if color_to_move == BLACK and fittest_move_score >= fitness_score:
-                fittest_move_score = fitness_score
+            if color_to_move == BLACK and fittest_move_score >= next_move_fitness_score:
+                fittest_move_score = next_move_fitness_score
                 fittest_move = legal_move
 
         return fittest_move
@@ -84,10 +84,14 @@ class DunceFishChessBot(DoorMatChessBot):
                     chess_board
                 )
 
-                game_fitness_score = white_fitness_score - black_fitness_score
+                next_move_fitness_score = white_fitness_score - black_fitness_score
 
-                if (self.is_move_more_fit(color_to_move, white_fitness_score, color_to_move_fitness_score)):
-                    color_to_move_fitness_score = game_fitness_score 
+                if (color_to_move == WHITE and next_move_fitness_score >= color_to_move_fitness_score):
+                   color_to_move_fitness_score = next_move_fitness_score 
+                   fittest_move = legal_move
+
+                if (color_to_move == BLACK and next_move_fitness_score <= color_to_move_fitness_score):
+                    color_to_move_fitness_score = next_move_fitness_score
                     fittest_move = legal_move
 
             else:
@@ -99,7 +103,7 @@ class DunceFishChessBot(DoorMatChessBot):
                 next_moves_color = not color_to_move
                 
                 # Get opponents best response.
-                [opponents_best_response, white_fitness_score] = (
+                [opponents_best_response, next_move_fitness_score] = (
                     self.choose_fittest_move(
                         opponents_legal_moves,
                         chess_board,
@@ -108,8 +112,12 @@ class DunceFishChessBot(DoorMatChessBot):
                     )
                 )
 
-                if (self.is_move_more_fit(color_to_move, white_fitness_score, color_to_move_fitness_score)):
-                    color_to_move_fitness_score = white_fitness_score
+                if (color_to_move == WHITE and next_move_fitness_score > color_to_move_fitness_score):
+                    color_to_move_fitness_score = next_move_fitness_score
+                    fittest_move = legal_move
+                
+                if (color_to_move == BLACK and next_move_fitness_score < color_to_move_fitness_score):
+                    color_to_move_fitness_score = next_move_fitness_score
                     fittest_move = legal_move
 
             chess_board.pop()
@@ -120,11 +128,11 @@ class DunceFishChessBot(DoorMatChessBot):
     Checks whether or not fitness score
     is deemed better for the side color_to_move
     '''
-    def is_move_more_fit(self, color_to_move, white_fitness_score, color_to_move_fitness_score):
-        if (color_to_move == WHITE and white_fitness_score >= color_to_move_fitness_score):
+    def is_move_more_fit(self, color_to_move, color_to_move_fitness_score, next_move_fitness_score):
+        if (color_to_move == WHITE and color_to_move_fitness_score >= next_move_fitness_score):
             return True
 
-        if (color_to_move == BLACK and white_fitness_score <= color_to_move_fitness_score):
+        if (color_to_move == BLACK and color_to_move_fitness_score <= next_move_fitness_score):
             return True
         
         return False
