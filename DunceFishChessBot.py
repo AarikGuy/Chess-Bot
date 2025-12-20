@@ -16,7 +16,10 @@ class DunceFishChessBot(DoorMatChessBot):
     def choose_move(self, legal_moves: list, chess_board: Board):
         self.moves_made += 1
         
-        # Every random_move_frequency number of moves
+        """
+        Every random_move_frequency number of moves, choose a random move if that
+        field was populated. This will prevent the bots being stuck in a looping game.
+        """
         if (self.random_move_frequency > 0 and self.moves_made % self.random_move_frequency == 0):
             return DoorMatChessBot.choose_move(self, legal_moves, chess_board)
             
@@ -25,12 +28,15 @@ class DunceFishChessBot(DoorMatChessBot):
 
         if color_to_move == BLACK:
             fittest_move_score = 1000000
+
         for legal_move in legal_moves:
             chess_board.push(legal_move)
+
             opponents_legal_moves = self.get_legal_moves_list(chess_board)
             [move, fitness_score] = self.choose_fittest_move(
                 opponents_legal_moves, chess_board, 1, chess_board.turn
             )
+
             chess_board.pop()
 
             if color_to_move == WHITE and fittest_move_score <= fitness_score:
@@ -43,64 +49,108 @@ class DunceFishChessBot(DoorMatChessBot):
 
         return fittest_move
 
+    '''
+    Given the state of the board
+    and all the available legal moves,
+    the method will guess the best legal
+    move for the color that's moving
+    '''
     def choose_fittest_move(
         self, legal_moves: list, chess_board: Board, ply_count: int, color_to_move
     ):
         self.call_counter += 1
-        color_to_move_fitness_score = 0
-
-        if color_to_move == WHITE:
-            color_to_move_fitness_score = -1000000
-        else:
-            color_to_move_fitness_score = 1000000
         fittest_move = None
+        color_to_move_fitness_score = self.get_default_fitness_score(color_to_move)
 
+        '''
+        For all the possible legal moves
+        that this player can make, push
+        that move on to the chess board,
+        then look at the opponents best response.
+        Choose the move where this player's
+        fitness score that has the biggest increase 
+        (or lowest difference if losing).
+        '''
         for legal_move in legal_moves:
             chess_board.push(legal_move)
+
+            '''
+            Play cutoff makes sure that this function doesn't run forever.
+            The base case, grab the fitness state of the game board to 
+            assess who's winning in this position.
+            '''
             if ply_count >= self.ply_cutoff:
                 [white_fitness_score, black_fitness_score] = self.get_fitness_scores(
                     chess_board
                 )
-                white_fitness_score = white_fitness_score - black_fitness_score
+
+                game_fitness_score = white_fitness_score - black_fitness_score
+
+                '''
+                White's goal is to get the fitness score as high as possible.
+                Positive values means that white is winning.
+                '''
                 if (
                     color_to_move == WHITE
-                    and white_fitness_score >= color_to_move_fitness_score
+                    and game_fitness_score >= color_to_move_fitness_score
                 ):
-                    color_to_move_fitness_score = white_fitness_score
+                    color_to_move_fitness_score = game_fitness_score 
                     fittest_move = legal_move
 
+                '''
+                Black's goal is to get the fitness score as low as possible.
+                Low values means that black is winning.
+                '''
                 if (
                     color_to_move == BLACK
-                    and white_fitness_score <= color_to_move_fitness_score
+                    and game_fitness_score <= color_to_move_fitness_score
                 ):
-                    color_to_move_fitness_score = white_fitness_score
+                    color_to_move_fitness_score = game_fitness_score 
                     fittest_move = legal_move
 
             else:
+                '''
+                Recursively finds the best move among all
+                the possible moves that could be found 
+                '''
                 opponents_legal_moves = self.get_legal_moves_list(chess_board)
-                sub_move_color = not color_to_move
+                next_moves_color = not color_to_move
+                
+                # Get opponents best response.
                 [opponents_best_response, white_fitness_score] = (
                     self.choose_fittest_move(
                         opponents_legal_moves,
                         chess_board,
                         ply_count + 1,
-                        sub_move_color,
+                        next_moves_color,
                     )
                 )
 
-                if (
-                    color_to_move == WHITE
-                    and white_fitness_score >= color_to_move_fitness_score
-                ):
+                if (self.is_move_more_fit(color_to_move, white_fitness_score, color_to_move_fitness_score)):
                     color_to_move_fitness_score = white_fitness_score
                     fittest_move = legal_move
-
-                if (
-                    color_to_move == BLACK
-                    and white_fitness_score <= color_to_move_fitness_score
-                ):
-                    color_to_move_fitness_score = white_fitness_score
 
             chess_board.pop()
 
         return [fittest_move, color_to_move_fitness_score]
+
+    '''
+    Checks whether or not fitness score
+    is deemed better for the side color_to_move
+    '''
+    def is_move_more_fit(self, color_to_move, white_fitness_score, color_to_move_fitness_score):
+        if (color_to_move == WHITE and white_fitness_score >= color_to_move_fitness_score):
+            return True
+
+        if (color_to_move == BLACK and white_fitness_score <= color_to_move_fitness_score):
+            return True
+        
+        return False
+
+    def get_default_fitness_score(self, color_to_move):
+        if color_to_move == WHITE:
+            color_to_move_fitness_score = -1000000
+        else:
+            color_to_move_fitness_score = 1000000
+
+        return color_to_move_fitness_score
