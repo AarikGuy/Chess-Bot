@@ -29,6 +29,8 @@ class DunceFishChessBot(DoorMatChessBot):
         if color_to_move == BLACK:
             fittest_move_score = 1000000
 
+        fittest_move = None
+
         for legal_move in legal_moves:
             chess_board.push(legal_move)
 
@@ -47,6 +49,9 @@ class DunceFishChessBot(DoorMatChessBot):
                 fittest_move_score = next_move_fitness_score
                 fittest_move = legal_move
 
+        if (fittest_move is None):
+            raise Exception("No fittest move was found!")
+        
         return fittest_move
 
     '''
@@ -80,7 +85,7 @@ class DunceFishChessBot(DoorMatChessBot):
             with indiciation that it's the
             optimal move, no need to continue
             '''
-            if (chess_board.is_checkmate):
+            if (chess_board.is_checkmate()):
               max_fitness = 1000000 if color_to_move == WHITE else -1000000 
               chess_board.pop()
               return [legal_move, max_fitness]
