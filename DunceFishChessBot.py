@@ -86,25 +86,7 @@ class DunceFishChessBot(DoorMatChessBot):
 
                 game_fitness_score = white_fitness_score - black_fitness_score
 
-                '''
-                White's goal is to get the fitness score as high as possible.
-                Positive values means that white is winning.
-                '''
-                if (
-                    color_to_move == WHITE
-                    and game_fitness_score >= color_to_move_fitness_score
-                ):
-                    color_to_move_fitness_score = game_fitness_score 
-                    fittest_move = legal_move
-
-                '''
-                Black's goal is to get the fitness score as low as possible.
-                Low values means that black is winning.
-                '''
-                if (
-                    color_to_move == BLACK
-                    and game_fitness_score <= color_to_move_fitness_score
-                ):
+                if (self.is_move_more_fit(color_to_move, white_fitness_score, color_to_move_fitness_score)):
                     color_to_move_fitness_score = game_fitness_score 
                     fittest_move = legal_move
 
