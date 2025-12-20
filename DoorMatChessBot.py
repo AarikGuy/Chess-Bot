@@ -4,10 +4,12 @@ from chess import Board
 from IChessBot import IChessBot
 import random
 
-
-# Incredibly stupid chess bot. Chooses a random legal move every turn. A human player can beat him easily.
-
-
+"""
+Chess bot that makes random moves.
+Any human player or chess bot with a
+strategy that plays for a win should
+be able to beat this bot.
+"""
 class DoorMatChessBot(IChessBot):
 
     def __init__(self):
