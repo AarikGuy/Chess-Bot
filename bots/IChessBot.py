@@ -1,6 +1,6 @@
 import chess
 from abc import ABC, abstractmethod
-from chess import Board, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, WHITE, BLACK
+from chess import Board, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, WHITE, BLACK, Move
 
 PIECE_WEIGHTS = {
     PAWN: 1,
@@ -17,14 +17,42 @@ ROWS = ["1", "2", "3", "4", "5", "6", "7", "8"]
 
 class IChessBot(ABC):
 
+    def __init__(self):
+        self.move_black_list = set() 
+
+    def black_list_move(self, move: Move, board: Board):
+        chess_board = str(board)
+        move_san = board.san(move)
+        move_key = f"{move_san} - {chess_board}"
+
+        if (move_key in self.move_black_list):
+            raise Exception("A duplicate board is being added to the previous boards set")
+
+        self.move_black_list.add(move_key)
+
+    def is_move_black_listed(self, move: Move, board: Board):
+        chess_board = str(board)
+        move_san = board.san(move)
+        move_key = f"{move_san} - {chess_board}"
+
+        return move_key in self.move_black_list
+        
     def generate_move(self, chess_board: Board) -> Board:
         if chess_board.is_checkmate():
             raise Exception("Can't generate move on a completed game.")
 
+        retVal = None
         legal_moves = self.get_legal_moves_list(chess_board)
-        legal_move = self.choose_move(legal_moves, chess_board)
 
-        return legal_move
+        while retVal is None:
+            move = self.choose_move(legal_moves, chess_board)
+
+            if (self.is_move_black_listed(move, chess_board)):
+                legal_moves.remove(move)
+            else:
+                self.black_list_move(move, chess_board)
+
+        return move
 
     @abstractmethod
     def choose_move(self, legal_moves: list, chess_board: Board):
