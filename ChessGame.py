@@ -1,6 +1,7 @@
 from chess import Move, Board, WHITE, BLACK
 import random
 from bots.IChessBot import IChessBot
+from enums.GameOutcomes import GameOutcomes
 
 class ChessGame:
     def set_up_board(self):
@@ -84,28 +85,7 @@ class ChessGame:
             [Move.from_uci(m) for m in self.moves]))
         print(f"{self.get_winner_of_last_game()}")
 
-        return self.last_to_move
-
-    '''
-    Works out the outcome of the chess game.
-    Throws an exception if the status there's
-    no clear ending to the game or the game 
-    is in progress.
-    '''
-    def get_winner_of_last_game(self):
-        if (not self.board.is_game_over()):
-            raise Exception("Can't get the game outcome for a game that is not over!")
-
-        if (self.board.is_stalemate() or self.board.is_insufficient_material()):
-            return "Draw!"
-
-        if (not self.board.is_checkmate):
-            raise Exception("Can't determine the outcome of the game in it's current state!")
-
-        if (self.last_to_move == WHITE):
-            return "White won!"
-
-        return "Black won!"
+        return self.get_game_outcome()
 
     def play_against_bot(self):
         while not self.is_game_over():
@@ -159,3 +139,40 @@ class ChessGame:
             return True
 
         return False
+
+    '''
+    Works out the outcome of the chess game.
+    Throws an exception if the status there's
+    no clear ending to the game or the game 
+    is in progress.
+    '''
+    def get_game_outcome(self):
+        if (not self.board.is_game_over()):
+            raise Exception("Can't get the game outcome for a game that is not over!")
+
+        if (self.board.is_stalemate() or self.board.is_insufficient_material()):
+            return GameOutcomes.DRAW 
+
+        if (not self.board.is_checkmate):
+            raise Exception("Can't determine the outcome of the game in it's current state!")
+
+        if (self.last_to_move == WHITE):
+            return GameOutcomes.WHITE_WON
+
+        return GameOutcomes.BLACK_WON
+
+    '''
+    Gets a formatted string of whoever
+    won the last game. 
+    '''
+    def get_winner_of_last_game(self):
+        outcome = self.get_game_outcome()
+
+        match outcome:
+            case GameOutcomes.WHITE_WON:
+                return "White won!"
+            case GameOutcomes.BLACK_WON:
+                return "Black won!"
+            case _:
+                return GameOutcomes.DRAW
+        
