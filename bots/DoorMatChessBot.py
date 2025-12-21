@@ -12,7 +12,7 @@ be able to beat this bot.
 class DoorMatChessBot(IChessBot):
 
     def __init__(self):
-        pass
+        IChessBot.__init__(self)
 
     def choose_move(self, legal_moves: list, chess_board: Board):
         if legal_moves is None or len(legal_moves) == 0:

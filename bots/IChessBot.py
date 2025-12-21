@@ -1,4 +1,6 @@
 import chess
+
+from helpers.BoardHelper import Board
 from abc import ABC, abstractmethod
 from chess import Board, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, WHITE, BLACK, Move
 
@@ -49,10 +51,13 @@ class IChessBot(ABC):
 
             if (self.is_move_black_listed(move, chess_board)):
                 legal_moves.remove(move)
+                print(f"{chess_board.get_turn()} to move - {chess_board.san(move)} is black listed, trying another move!")
             else:
+                print(f"{chess_board.get_turn()} plays {chess_board.san(move)}")
                 self.black_list_move(move, chess_board)
+                retVal = move
 
-        return move
+        return retVal 
 
     @abstractmethod
     def choose_move(self, legal_moves: list, chess_board: Board):
@@ -81,3 +86,5 @@ class IChessBot(ABC):
                     black_fitness_score += piece_weight
 
         return [white_fitness_score, black_fitness_score]
+    
+    
