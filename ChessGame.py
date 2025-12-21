@@ -5,16 +5,17 @@ from bots.IChessBot import IChessBot
 class ChessGame:
     def set_up_board(self):
         self.moves = []
-        self.white_debug_moves = ["d4", "Bf4", "Nf3", "e3", "Bd3", "Bd6+"]
-        self.black_debug_moves = ["d5", "Bf5", "Nf6", "e6", "Bd6"]
+
+        '''
+        Pre programmed moves that both sides
+        will start with. Useful for debugging
+        '''
+        self.white_initial_moves = []
+        self.black_initial_moves = []
 
     def __init__(self, chess_bot: IChessBot, bots_color: bool = None):
         self.board = Board()
-
-        if bots_color is None:
-            self.bots_color = self.choose_color()
-        else:
-            self.bots_color = bots_color
+        self.bots_color = self.choose_color() if bots_color is None else bots_color
         self.bot = chess_bot
 
         self.set_up_board()
@@ -24,6 +25,7 @@ class ChessGame:
         self.white_bot = white_bot
         self.black_bot = black_bot
         self.set_up_board()
+        self.last_to_move = WHITE
 
     def choose_color(self):
         color_picked = False
@@ -49,18 +51,14 @@ class ChessGame:
 
             print("You did not select a color! Try again: (w/b/r)")
 
-        raise Exception("No color was selected.")
-
     def have_bots_play(self):
-        turn_count = 1
-        last_to_move = WHITE
-
         while not self.is_game_over():
             while (
                 self.board.turn == WHITE and not self.is_game_over()
             ):
-                last_to_move = WHITE
+                self.last_to_move = WHITE
 
+                # Use white's pre programmed moves before using bot's choosing logic.
                 if self.push_debug_moves():
                     continue
 
@@ -69,7 +67,9 @@ class ChessGame:
                 self.moves.insert(len(self.moves), str(move))
 
             while self.board.turn == BLACK and not self.is_game_over():
-                last_to_move = BLACK
+                self.last_to_move = BLACK
+                
+                # Use white's pre programmed moves before using bot's choosing logic.
                 if self.push_debug_moves():
                     continue
 
@@ -79,13 +79,33 @@ class ChessGame:
 
         start_board = Board()
 
+        # Print out the game that was played by the two bots.
         print(start_board.variation_san(
             [Move.from_uci(m) for m in self.moves]))
-        
-        winner = "White" if last_to_move == WHITE else "Black"
-        print(f"{winner} wins!")
+        print(f"{self.get_winner_of_last_game()}")
 
-        return last_to_move
+        return self.last_to_move
+
+    '''
+    Works out the outcome of the chess game.
+    Throws an exception if the status there's
+    no clear ending to the game or the game 
+    is in progress.
+    '''
+    def get_winner_of_last_game(self):
+        if (not self.board.is_game_over()):
+            raise Exception("Can't get the game outcome for a game that is not over!")
+
+        if (self.board.is_stalemate() or self.board.is_insufficient_material()):
+            return "Draw!"
+
+        if (not self.board.is_checkmate):
+            raise Exception("Can't determine the outcome of the game in it's current state!")
+
+        if (self.last_to_move == WHITE):
+            return "White won!"
+
+        return "Black won!"
 
     def play_against_bot(self):
         while not self.is_game_over():
@@ -124,15 +144,15 @@ class ChessGame:
         return self.board.is_checkmate() or self.board.is_stalemate() or len(list(self.board.legal_moves)) == 0
 
     def push_debug_moves(self):
-        if self.board.turn == WHITE and len(self.white_debug_moves) > 0:
-            move = self.white_debug_moves.pop(0)
+        if self.board.turn == WHITE and len(self.white_initial_moves) > 0:
+            move = self.white_initial_moves.pop(0)
             self.board.push_san(move)
             self.moves.insert(len(self.moves), str(self.board.peek()))
 
             return True
 
-        if self.board.turn == BLACK and len(self.black_debug_moves) > 0:
-            move = self.black_debug_moves.pop(0)
+        if self.board.turn == BLACK and len(self.black_initial_moves) > 0:
+            move = self.black_initial_moves.pop(0)
             self.board.push_san(move)
             self.moves.insert(len(self.moves), str(self.board.peek()))
 
