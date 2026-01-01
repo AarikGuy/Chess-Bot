@@ -1,6 +1,9 @@
 import json
 import requests
 
+from accessors.models import LiChess
+from models.LiChess import Game, ChallengeList
+
 SECRETS_PATH = "secrets.json"
 LI_CHESS_TOKEN = "LiChessToken"
 LI_CHESS_BASE_URL = "https://lichess.org/"
@@ -25,7 +28,7 @@ class LiChessAccessor:
         if response.status_code != 200:
             raise Exception("Unable to fetch challenges from LiChess.")
 
-        return response.json()
+        return ChallengeList.ChallengeList(response.json())
 
     def accept_challenge(self, challenge_id: str):
         response = requests.post(
@@ -56,10 +59,22 @@ class LiChessAccessor:
         if response.status_code != 200:
             raise Exception(f"Failed to push move {move} to game {game_id}")
 
+    def get_ongoing_challenges(self, number_of_games=50):
+        if number_of_games <= 0 or number_of_games > 50:
+            raise Exception(f"Invalid number of games being fetched: {number_of_games}")
+
+        response = requests.get(
+            f"{LI_CHESS_BASE_URL}/api/account/playing",
+            headers={"Authorization": self.token},
+            params={"nb": f"{number_of_games}"},
+        )
+
+        return Game.Game(response.json())
+
     """
     Method that sends a message to the opposing player.
     Should be used for trash talk ;)
     """
 
-    def send_message_async(self):
+    def send_message(self):
         pass
