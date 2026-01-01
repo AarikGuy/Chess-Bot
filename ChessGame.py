@@ -2,27 +2,37 @@ from chess import Move, Board, WHITE, BLACK
 import random
 from bots.IChessBot import IChessBot
 
+
 class ChessGame:
     def set_up_board(self):
         self.moves = []
         self.white_debug_moves = ["d4", "Bf4", "Nf3", "e3", "Bd3", "Bd6+"]
         self.black_debug_moves = ["d5", "Bf5", "Nf6", "e6", "Bd6"]
 
-    def __init__(self, chess_bot: IChessBot, bots_color: bool = None):
+    def __init__(self, **kwargs):
         self.board = Board()
 
-        if bots_color is None:
-            self.bots_color = self.choose_color()
+        if kwargs is None or (len(kwargs) != 2 and len(kwargs) != 1):
+            raise Exception(f"Invalid configuration for chess game: {kwargs}")
+
+        if "white_bot" in kwargs and "black_bot" in kwargs:
+            self.white_bot = kwargs["white_bot"]
+            self.black_bot = kwargs["black_bot"]
+            self.set_up_board()
+
+            return
+
+        if "chess_bot" not in kwargs and "bots_color" not in kwargs:
+            raise Exception(f"Invalid configuration for chess game: {kwargs}")
+
+        if "chess_bot" in kwargs:
+            self.chess_bot = kwargs["chess_bot"]
+
+        if "bots_color" in kwargs:
+            self.bots_color = kwargs["bots_color"]
         else:
-            self.bots_color = bots_color
-        self.bot = chess_bot
+            self.bots_color = self.choose_color()
 
-        self.set_up_board()
-
-    def __init__(self, white_bot: IChessBot, black_bot: bool):
-        self.board = Board()
-        self.white_bot = white_bot
-        self.black_bot = black_bot
         self.set_up_board()
 
     def choose_color(self):
@@ -56,9 +66,7 @@ class ChessGame:
         last_to_move = WHITE
 
         while not self.is_game_over():
-            while (
-                self.board.turn == WHITE and not self.is_game_over()
-            ):
+            while self.board.turn == WHITE and not self.is_game_over():
                 last_to_move = WHITE
 
                 if self.push_debug_moves():
@@ -79,9 +87,8 @@ class ChessGame:
 
         start_board = Board()
 
-        print(start_board.variation_san(
-            [Move.from_uci(m) for m in self.moves]))
-        
+        print(start_board.variation_san([Move.from_uci(m) for m in self.moves]))
+
         winner = "White" if last_to_move == WHITE else "Black"
         print(f"{winner} wins!")
 
@@ -89,9 +96,7 @@ class ChessGame:
 
     def play_against_bot(self):
         while not self.is_game_over():
-            while (
-                not self.board.turn == self.bots_color and not self.is_game_over()
-            ):
+            while not self.board.turn == self.bots_color and not self.is_game_over():
                 if self.push_debug_moves():
                     continue
 
@@ -121,7 +126,11 @@ class ChessGame:
         print(str(self.board.result))
 
     def is_game_over(self):
-        return self.board.is_checkmate() or self.board.is_stalemate() or len(list(self.board.legal_moves)) == 0
+        return (
+            self.board.is_checkmate()
+            or self.board.is_stalemate()
+            or len(list(self.board.legal_moves)) == 0
+        )
 
     def push_debug_moves(self):
         if self.board.turn == WHITE and len(self.white_debug_moves) > 0:
