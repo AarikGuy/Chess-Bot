@@ -25,7 +25,7 @@ class LiChessAccessor:
         if response.status_code != 200:
             raise Exception("Unable to fetch challenges from LiChess.")
 
-        return response.content
+        return response.json()
 
     def accept_challenge(self, challenge_id: str):
         response = requests.post(
