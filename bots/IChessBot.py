@@ -20,7 +20,6 @@ ROWS = ["1", "2", "3", "4", "5", "6", "7", "8"]
 
 
 class IChessBot(ABC):
-
     def __init__(self, random_move_frequency=0):
         self.move_black_list = set()
         self.random_move_frequency = random_move_frequency
@@ -46,7 +45,7 @@ class IChessBot(ABC):
 
         return move_key in self.move_black_list
 
-    def generate_move(self, chess_board: Board) -> Board:
+    def generate_move(self, chess_board: Board) -> Move:
         if chess_board.is_checkmate():
             raise Exception("Can't generate move on a completed game.")
 
@@ -59,10 +58,10 @@ class IChessBot(ABC):
                 "Attempting to generate a move from a board that has no legal moves!"
             )
 
-        '''
+        """
         Choose a random move
         if the bot was configured
-        to do so.'''
+        to do so."""
         if (
             self.random_move_frequency > 0
             and self.moves_made % self.random_move_frequency == 0
@@ -83,13 +82,12 @@ class IChessBot(ABC):
                 self.black_list_move(move, chess_board)
                 selected_move = move
 
-        
-        '''
+        """
         If the number of pieces on the board was reduced,
         all of the black listed moves can't happen again
         so the list can be cleared.
-        '''
-        if (chess_board.is_capture(selected_move)):
+        """
+        if chess_board.is_capture(selected_move):
             self.move_black_list.clear()
 
         return selected_move
