@@ -1,3 +1,4 @@
+import logging
 from bots.IChessBot import IChessBot
 from bots.DoorMatChessBot import DoorMatChessBot
 from chess import Board, WHITE, BLACK
@@ -12,22 +13,27 @@ class DunceFishChessBot(DoorMatChessBot):
         self.call_counter = 0
         self.moves_made = 0
         self.random_move_frequency = random_move_frequency
+        self.logger = logging.getLogger("li_chess_processor")
 
     def choose_move(self, legal_moves: list, chess_board: Board):
         self.moves_made += 1
-        
+
         # Every random_move_frequency number of moves
-        if (self.random_move_frequency > 0 and self.moves_made % self.random_move_frequency == 0):
+        if (
+            self.random_move_frequency > 0
+            and self.moves_made % self.random_move_frequency == 0
+        ):
             return DoorMatChessBot.choose_move(self, legal_moves, chess_board)
-            
+
         color_to_move = chess_board.turn
         fittest_move_score = -1000000
+        fittest_move = None
 
         if color_to_move == BLACK:
             fittest_move_score = 1000000
         for legal_move in legal_moves:
             chess_board.push(legal_move)
-            opponents_legal_moves = list(chess_board.legal_moves) 
+            opponents_legal_moves = list(chess_board.legal_moves)
             [move, fitness_score] = self.choose_fittest_move(
                 opponents_legal_moves, chess_board, 1, chess_board.turn
             )
@@ -41,6 +47,9 @@ class DunceFishChessBot(DoorMatChessBot):
                 fittest_move_score = fitness_score
                 fittest_move = legal_move
 
+        if fittest_move is None:
+            self.logger.error(f"No fittest move could be found: {str(chess_board)}")
+            raise Exception("No fittest move could be found")
         return fittest_move
 
     def choose_fittest_move(
@@ -77,7 +86,7 @@ class DunceFishChessBot(DoorMatChessBot):
                     fittest_move = legal_move
 
             else:
-                opponents_legal_moves = list(chess_board.legal_moves) 
+                opponents_legal_moves = list(chess_board.legal_moves)
                 sub_move_color = not color_to_move
                 [opponents_best_response, white_fitness_score] = (
                     self.choose_fittest_move(
