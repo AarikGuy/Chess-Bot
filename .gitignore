@@ -1,5 +1,4 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
-secrets.json
 venv/*
 **/__pycache__/*
 lib/*
@@ -7,3 +6,5 @@ lib64
 pyvenv.cfg
 **/.exrc
 bin/*
+secrets.json
+**/*.log

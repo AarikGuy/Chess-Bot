@@ -1,11 +1,11 @@
-from models.LiChess import Player, Variant, TimeControl, Perf
+from accessors.models.LiChess import Player, Variant, TimeControl, Perf
 
 
 class Challenge:
     def __init__(self, response):
         self.id = response["id"]
         self.url = response["url"]
-        self.status = response["created"]
+        self.status = response["status"]
         self.challenger = Player.Player(response["challenger"])
         self.dest_user = Player.Player(response["destUser"])
         self.variant = Variant.Variant(response["variant"])

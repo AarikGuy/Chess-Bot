@@ -1,6 +1,5 @@
-import Player
-import Variant
 from chess import BLACK, WHITE
+from accessors.models.LiChess import Player, Variant
 
 
 class Game:
@@ -18,9 +17,10 @@ class Game:
         self.is_my_turn = response["isMyTurn"]
         self.last_move = response["lastMove"]
         self.opponent = Player.Player(response["opponent"])
-        self.perf = response["correspondence"]
+        self.perf = response["perf"]
         self.rated = response["rated"]
-        self.seconds_left = response["secondsLeft"]
+        if "secondsLeft" in response:
+            self.seconds_left = response["secondsLeft"]
         self.source = response["source"]
         self.speed = response["speed"]
         self.variant = Variant.Variant(response["variant"])
