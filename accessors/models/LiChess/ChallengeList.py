@@ -1,4 +1,4 @@
-import Challenge
+from accessors.models.LiChess import Challenge
 
 
 class ChallengeList:
