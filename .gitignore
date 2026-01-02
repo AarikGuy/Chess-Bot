@@ -7,3 +7,4 @@ pyvenv.cfg
 **/.exrc
 bin/*
 secrets.json
+**/*.log
