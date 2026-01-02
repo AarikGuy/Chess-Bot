@@ -95,6 +95,7 @@ class ChessGame:
         return last_to_move
 
     def play_against_bot(self):
+        bot = self.white_bot if self.bots_color == WHITE else self.black_bot
         while not self.is_game_over():
             while not self.board.turn == self.bots_color and not self.is_game_over():
                 if self.push_debug_moves():
@@ -118,7 +119,7 @@ class ChessGame:
                 if self.push_debug_moves():
                     continue
 
-                move = self.bot.generate_move(self.board)
+                move = bot.generate_move(self.board)
                 self.board.push(move)
                 print(f"""The bot has played: {str(move)}, your move!""")
 
